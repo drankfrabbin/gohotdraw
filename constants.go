@@ -1,0 +1,11 @@
+package gohotdraw
+
+const (
+	INT16_MAX_VALUE  = 32767
+	INT16_MIN_VALUE  = -32768
+	UINT16_MAX_VALUE = 65535
+	UINT16_MIN_VALUE = 0
+	INT32_MAX_VALUE  = 2147483647
+	INT32_MIN_VALUE  = -2147483648
+	UNIMPLEMENTED    = "Unimplemented. Subclasses should override."
+)

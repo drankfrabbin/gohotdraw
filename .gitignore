@@ -1,0 +1,7 @@
+# ignore
+*~
+_obj
+_test
+*.out
+*.8
+_go*
