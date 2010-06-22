@@ -1,7 +1,7 @@
 package gohotdraw
 
 import (
-	_ "fmt"
+	_"fmt"
 	"math"
 )
 
@@ -232,7 +232,7 @@ func (this *AreaTracker) drawRubberband() {
 	if g != nil {
 		this.editor.GetView().Repaint()
 		g.SetFGColor(211, 211, 211)
-		g.DrawBorderFromRect(this.rubberband)
+		g.DrawBorderFromRectDirectly(this.rubberband)
 	}
 }
 

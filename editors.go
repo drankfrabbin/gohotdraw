@@ -45,5 +45,5 @@ func (this *DefaultDrawingEditor) ToolDone() {
 }
 
 func (this *DefaultDrawingEditor) FigureSelectionChanged(view DrawingView) {
-	//fmt.Printf("selection changed, %v figures selected\n", view.GetSelection().Len() )
+	view.Repaint()
 }

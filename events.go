@@ -81,7 +81,7 @@ func (this *MouseEvent) GetPoint() *Point {
 }
 
 func (this *MouseEvent) IsShiftDown() bool {
-	return this.KeyModifier == SHIFT_KEY
+	return (this.KeyModifier & SHIFT_KEY) == SHIFT_KEY
 }
 
 type KeyEvent struct {

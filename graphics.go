@@ -12,6 +12,7 @@ const (
 	DEFAULT_Y      int16  = 50
 	DEFAULT_WIDTH  uint16 = 400
 	DEFAULT_HEIGHT uint16 = 350
+	DEFAULT_EVENTS uint32 = xgb.EventMaskKeyRelease | xgb.EventMaskKeyPress | xgb.EventMaskButtonRelease | xgb.EventMaskButtonPress | xgb.EventMaskButtonMotion | xgb.EventMaskExposure
 )
 
 type Graphics interface {
@@ -32,12 +33,16 @@ type Graphics interface {
 	DrawBorderFromRect(rect *Rectangle)
 	DrawBorderedRect(x, y, width, height int)
 	DrawBorderedRectFromRect(rect *Rectangle)
+	DrawBorderFromRectDirectly(rect *Rectangle)
+	
+	Repaint(srcX, srcY, destX, destY , width , height int)
 }
 
 type XGBGraphics struct {
 	listeners  *vector.Vector
 	connection *xgb.Conn
 	winId      xgb.Id
+	pixmapId   xgb.Id
 	contextId  xgb.Id
 }
 
@@ -49,12 +54,14 @@ func NewXGBGraphics(x, y int16, width, height uint16) *XGBGraphics {
 	g := &XGBGraphics{}
 	g.listeners = new(vector.Vector)
 	g.initialize(x, y, width, height)
+	g.SetEventListenTypes([]uint32{DEFAULT_EVENTS})
 	return g
 }
 
 func (this *XGBGraphics) initialize(x, y int16, width, height uint16) {
 	this.connection = this.createConnection()
 	this.winId = this.createWindow(x, y, width, height)
+	this.pixmapId = this.createPixmap(width, height)
 	this.contextId = this.createContext()
 }
 
@@ -70,8 +77,17 @@ func (this *XGBGraphics) createConnection() *xgb.Conn {
 func (this *XGBGraphics) createWindow(x, y int16, width, height uint16) xgb.Id {
 	if this.connection != nil {
 		winId := this.connection.NewId()
-		this.connection.CreateWindow(0, winId, this.connection.DefaultScreen().Root, x, y, width, height, 0, xgb.WindowClassCopyFromParent, this.connection.DefaultScreen().RootVisual, 0, nil)
+		this.connection.CreateWindow(this.connection.DefaultScreen().RootDepth, winId, this.connection.DefaultScreen().Root, x, y, width, height, 0, xgb.WindowClassCopyFromParent, this.connection.DefaultScreen().RootVisual, 0, nil)
 		return winId
+	}
+	return 0
+}
+
+func (this *XGBGraphics) createPixmap(width, height uint16) xgb.Id {
+	if this.connection != nil {
+		pixmapId := this.connection.NewId()
+		this.connection.CreatePixmap(this.connection.DefaultScreen().RootDepth, pixmapId, this.winId, width, height)
+		return pixmapId
 	}
 	return 0
 }
@@ -94,6 +110,7 @@ func (this *XGBGraphics) HideWindow() {
 }
 
 func (this *XGBGraphics) CloseAll() {
+	this.connection.FreePixmap(this.pixmapId)
 	this.connection.Close()
 }
 
@@ -151,7 +168,7 @@ func (this *XGBGraphics) GetWindowSize() *Dimension {
 
 func (this *XGBGraphics) DrawRect(x, y, width, height int) {
 	rect := this.createRectangle(x, y, width, height)
-	this.connection.PolyFillRectangle(this.winId, this.contextId, rect)
+	this.connection.PolyFillRectangle(this.pixmapId, this.contextId, rect)
 }
 
 func (this *XGBGraphics) DrawRectFromRect(rect *Rectangle) {
@@ -160,11 +177,16 @@ func (this *XGBGraphics) DrawRectFromRect(rect *Rectangle) {
 
 func (this *XGBGraphics) DrawBorder(x, y, width, height int) {
 	rect := this.createRectangle(x, y, width, height)
-	this.connection.PolyRectangle(this.winId, this.contextId, rect)
+	this.connection.PolyRectangle(this.pixmapId, this.contextId, rect)
 }
 
 func (this *XGBGraphics) DrawBorderFromRect(rect *Rectangle) {
 	this.DrawBorder(rect.X, rect.Y, rect.Width, rect.Height)
+}
+
+func (this *XGBGraphics) DrawBorderFromRectDirectly(rect *Rectangle) {
+	xgbRect := this.createRectangle(rect.X, rect.Y, rect.Width, rect.Height)
+	this.connection.PolyRectangle(this.winId, this.contextId, xgbRect)
 }
 
 func (this *XGBGraphics) DrawBorderedRect(x, y, width, height int) {
@@ -181,4 +203,12 @@ func (this *XGBGraphics) createRectangle(x, y, width, height int) []xgb.Rectangl
 	xgbRect := make([]xgb.Rectangle, 1)
 	xgbRect[0] = xgb.Rectangle{int16(x), int16(y), uint16(width), uint16(height)}
 	return xgbRect
+}
+
+func (this *XGBGraphics) repaint(srcX, srcY, destX, destY  int16 , width , height uint16) {
+	this.connection.CopyArea(this.pixmapId, this.winId, this.contextId, srcX , srcY , destX , destY , width, height)
+}
+
+func (this *XGBGraphics) Repaint(srcX, srcY, destX, destY , width , height int) {
+	this.repaint(int16(srcX), int16(srcY), int16(destX), int16(destY) , uint16(width) , uint16(height))
 }
