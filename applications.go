@@ -56,10 +56,9 @@ func (this *DefaultApp) createView(editor DrawingEditor, graphics Graphics) Draw
 }
 
 func (this *DefaultApp) setupGraphics() {
-	this.g.SetWindowBackground(255, 255, 255)
+	this.g.SetWindowBackground(White)
 	this.g.SetWindowTitle(this.title)
-	this.g.SetFGColor(0, 0, 0)
-	this.g.SetBGColor(255, 255, 255)
+	this.g.SetFGColor(Black)
 }
 
 func (this *DefaultApp) MouseDown(e *MouseEvent) {

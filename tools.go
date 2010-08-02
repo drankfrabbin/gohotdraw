@@ -71,16 +71,16 @@ func NewCreationTool(editor DrawingEditor, prototype Figure) *CreationTool {
 func (this *CreationTool) MouseDown(e *MouseEvent) {
 	this.anchor = e.GetPoint()
 	this.createdFigure = this.createFigure()
-	SetDisplayBox(this.createdFigure, this.anchor, this.anchor)
+	this.createdFigure.SetDisplayBox(this.createdFigure, this.anchor, this.anchor)
 	this.editor.GetView().Add(this.createdFigure)
 }
 
 func (this *CreationTool) MouseDrag(e *MouseEvent) {
-	SetDisplayBox(this.createdFigure, this.anchor, e.GetPoint())
+	this.createdFigure.SetDisplayBox(this.createdFigure, this.anchor, e.GetPoint())
 }
 
 func (this *CreationTool) MouseUp(e *MouseEvent) {
-	if IsEmpty(this.createdFigure) {
+	if this.createdFigure.IsEmpty(this.createdFigure) {
 		this.editor.GetView().Remove(this.createdFigure)
 	}
 	this.createdFigure = nil
@@ -186,7 +186,8 @@ func (this *DragTracker) MouseDrag(e *MouseEvent) {
 	if this.hasMoved {
 		selectedFigures := this.editor.GetView().GetSelection()
 		for i := 0; i < selectedFigures.Len(); i++ {
-			MoveBy(selectedFigures.At(i).(Figure), e.X-this.lastX, e.Y-this.lastY)
+			selectedFigure := selectedFigures.At(i).(Figure)
+			selectedFigure.MoveBy(selectedFigure, e.X-this.lastX, e.Y-this.lastY)
 		}
 	}
 	this.lastX = e.X
@@ -231,7 +232,7 @@ func (this *AreaTracker) drawRubberband() {
 	g := this.editor.GetView().GetGraphics()
 	if g != nil {
 		this.editor.GetView().Repaint()
-		g.SetFGColor(211, 211, 211)
+		g.SetFGColor(GreyBlue)
 		g.DrawBorderFromRectDirectly(this.rubberband)
 	}
 }

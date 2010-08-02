@@ -4,7 +4,7 @@ TARG=github.com/drankfrabbin/gohotdraw
 
 GOFILES=\
 	applications.go\
-	constants.go\
+	colors.go\
 	drawings.go\
 	editors.go\
 	events.go\
@@ -16,6 +16,7 @@ GOFILES=\
 	locators.go\
 	painters.go\
 	resizehandles.go\
+	set.go\
 	tools.go\
 	util.go\
 	views.go\

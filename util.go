@@ -2,37 +2,8 @@ package gohotdraw
 
 import (
 	_ "fmt"
-	"container/vector"
 	"math"
 )
-
-func Contains(element interface{}, container *vector.Vector) bool {
-	for i := 0; i < container.Len(); i++ {
-		currentElement := container.At(i)
-		if currentElement == element {
-			return true
-		}
-	}
-	return false
-}
-
-func Remove(element interface{}, container *vector.Vector) {
-	for i := 0; i < container.Len(); i++ {
-		currentElement := container.At(i)
-		if currentElement == element {
-			container.Delete(i)
-			return
-		}
-	}
-}
-
-func CloneVector(oldVector *vector.Vector) *vector.Vector {
-	newVector := new(vector.Vector)
-	for element := range oldVector.Iter() {
-		newVector.Push(element)
-	}
-	return newVector
-}
 
 type Dimension struct {
 	Width  int
@@ -98,11 +69,11 @@ func (this *Rectangle) Add(newX, newY int) {
 	}
 	x2 -= x1
 	y2 -= y1
-	if x2 > INT32_MAX_VALUE {
-		x2 = INT32_MAX_VALUE
+	if x2 > math.MaxInt32 {
+		x2 = math.MaxInt32
 	}
-	if y2 > INT32_MAX_VALUE {
-		y2 = INT32_MAX_VALUE
+	if y2 > math.MaxInt32 {
+		y2 = math.MaxInt32
 	}
 	this.SetBounds(x1, y1, x2, y2)
 }
@@ -130,13 +101,13 @@ func (this *Rectangle) Translate(dx, dy int) {
 				// clipping.  Think of the following adjustment
 				// conceptually the same as:
 				// width += newv newv = MIN_VALUE width -= newv
-				this.Width += newv - INT32_MIN_VALUE
+				this.Width += newv - math.MinInt32
 				// width may go negative if the right edge went past
 				// MIN_VALUE, but it cannot overflow since it cannot
 				// have moved more than MIN_VALUE and any non-negative
 				// number + MIN_VALUE does not overflow.
 			}
-			newv = INT32_MIN_VALUE
+			newv = math.MinInt32
 		}
 	} else {
 		// moving rightward (or staying still)
@@ -145,14 +116,14 @@ func (this *Rectangle) Translate(dx, dy int) {
 			if this.Width >= 0 {
 				// Conceptually the same as:
 				// width += newv newv = MAX_VALUE width -= newv
-				this.Width += newv - INT32_MAX_VALUE
+				this.Width += newv - math.MaxInt32
 				// With large widths and large displacements
 				// we may overflow so we need to check it.
 				if this.Width < 0 {
-					this.Width = INT32_MAX_VALUE
+					this.Width = math.MaxInt32
 				}
 			}
-			newv = INT32_MAX_VALUE
+			newv = math.MaxInt32
 		}
 	}
 	this.X = newv
@@ -164,22 +135,22 @@ func (this *Rectangle) Translate(dx, dy int) {
 		if newv > oldv {
 			// negative overflow
 			if this.Height >= 0 {
-				this.Height += newv - INT32_MIN_VALUE
+				this.Height += newv - math.MinInt32
 				// See above comment about no overflow in this case
 			}
-			newv = INT32_MIN_VALUE
+			newv = math.MinInt32
 		}
 	} else {
 		// moving downward (or staying still)
 		if newv < oldv {
 			// positive overflow
 			if this.Height >= 0 {
-				this.Height += newv - INT32_MAX_VALUE
+				this.Height += newv - math.MaxInt32
 				if this.Height < 0 {
-					this.Height = INT32_MAX_VALUE
+					this.Height = math.MaxInt32
 				}
 			}
-			newv = INT32_MAX_VALUE
+			newv = math.MaxInt32
 		}
 	}
 	this.Y = newv
@@ -204,56 +175,56 @@ func (this *Rectangle) Grow(h, v int) {
 		// it is clipped so that we avoid the risk that the clipping
 		// of x0 will reverse the ordering of x0 and x1.
 		x1 -= x0
-		if x1 < INT32_MIN_VALUE {
-			x1 = INT32_MIN_VALUE
+		if x1 < math.MinInt32 {
+			x1 = math.MinInt32
 		}
-		if x0 < INT32_MIN_VALUE {
-			x0 = INT32_MIN_VALUE
-		} else if x0 > INT32_MAX_VALUE {
-			x0 = INT32_MAX_VALUE
+		if x0 < math.MinInt32 {
+			x0 = math.MinInt32
+		} else if x0 > math.MaxInt32 {
+			x0 = math.MaxInt32
 		}
 	} else { // (x1 >= x0)
 		// Clip x0 before we subtract it from x1 in case the clipping
 		// affects the representable area of the rectangle.
-		if x0 < INT32_MIN_VALUE {
-			x0 = INT32_MIN_VALUE
-		} else if x0 > INT32_MAX_VALUE {
-			x0 = INT32_MAX_VALUE
+		if x0 < math.MinInt32 {
+			x0 = math.MinInt32
+		} else if x0 > math.MaxInt32 {
+			x0 = math.MaxInt32
 		}
 		x1 -= x0
 		// The only way x1 can be negative now is if we clipped
 		// x0 against MIN and x1 is less than MIN - in which case
 		// we want to leave the width negative since the result
 		// did not intersect the representable area.
-		if x1 < INT32_MIN_VALUE {
-			x1 = INT32_MIN_VALUE
-		} else if x1 > INT32_MAX_VALUE {
-			x1 = INT32_MAX_VALUE
+		if x1 < math.MinInt32 {
+			x1 = math.MinInt32
+		} else if x1 > math.MaxInt32 {
+			x1 = math.MaxInt32
 		}
 	}
 
 	if y1 < y0 {
 		// Non-existant in Y direction
 		y1 -= y0
-		if y1 < INT32_MIN_VALUE {
-			y1 = INT32_MIN_VALUE
+		if y1 < math.MinInt32 {
+			y1 = math.MinInt32
 		}
-		if y0 < INT32_MIN_VALUE {
-			y0 = INT32_MIN_VALUE
-		} else if y0 > INT32_MAX_VALUE {
-			y0 = INT32_MAX_VALUE
+		if y0 < math.MinInt32 {
+			y0 = math.MinInt32
+		} else if y0 > math.MaxInt32 {
+			y0 = math.MaxInt32
 		}
 	} else { // (y1 >= y0)
-		if y0 < INT32_MIN_VALUE {
-			y0 = INT32_MIN_VALUE
-		} else if y0 > INT32_MAX_VALUE {
-			y0 = INT32_MAX_VALUE
+		if y0 < math.MinInt32 {
+			y0 = math.MinInt32
+		} else if y0 > math.MaxInt32 {
+			y0 = math.MaxInt32
 		}
 		y1 -= y0
-		if y1 < INT32_MIN_VALUE {
-			y1 = INT32_MIN_VALUE
-		} else if y1 > INT32_MAX_VALUE {
-			y1 = INT32_MAX_VALUE
+		if y1 < math.MinInt32 {
+			y1 = math.MinInt32
+		} else if y1 > math.MaxInt32 {
+			y1 = math.MaxInt32
 		}
 	}
 	this.SetBounds(x0, y0, x1, y1)
@@ -301,11 +272,11 @@ func (this *Rectangle) Union(r *Rectangle) *Rectangle {
 	// tx2,ty2 will never underflow since both original rectangles
 	// were already proven to be non-empty
 	// they might overflow, though...
-	if tx2 > INT32_MAX_VALUE {
-		tx2 = INT32_MAX_VALUE
+	if tx2 > math.MaxInt32 {
+		tx2 = math.MaxInt32
 	}
-	if ty2 > INT32_MAX_VALUE {
-		ty2 = INT32_MAX_VALUE
+	if ty2 > math.MaxInt32 {
+		ty2 = math.MaxInt32
 	}
 	return &Rectangle{tx1, ty1, tx2, ty2}
 }
@@ -331,7 +302,10 @@ func (this *Rectangle) Contains(X, Y int) bool {
 }
 
 func (this *Rectangle) ContainsRect(rect *Rectangle) bool {
-	return (rect.X >= this.X && rect.Y >= this.Y && (rect.X+int(math.Fmax(0, float64(rect.Width)))) <= this.X+int(math.Fmax(0, float64(this.Width))) && (rect.Y+int(math.Fmax(0, float64(rect.Height)))) <= this.Y+int(math.Fmax(0, float64(this.Height))))
+	return (
+		rect.X >= this.X && rect.Y >= this.Y && 
+		(rect.X+int(math.Fmax(0, float64(rect.Width)))) <= this.X+int(math.Fmax(0, float64(this.Width))) && 
+		(rect.Y+int(math.Fmax(0, float64(rect.Height)))) <= this.Y+int(math.Fmax(0, float64(this.Height))))
 }
 
 func (this *Rectangle) ContainsPoint(point *Point) bool {

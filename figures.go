@@ -1,20 +1,26 @@
 package gohotdraw
 
 import (
-	"container/vector"
+	_"container/vector"
 	"fmt"
 )
 
 type Figure interface {
+	MoveBy(figure Figure, dx int, dy int)
 	basicMoveBy(dx int, dy int)
+	changed(figure Figure)
 	GetDisplayBox() *Rectangle
-	Draw(g Graphics)
-	GetHandles() *vector.Vector
-	GetFigures() *vector.Vector
-	setBasicDisplayBox(topLeft, bottomRight *Point)
+	GetSize(figure Figure) *Dimension
+	IsEmpty(figure Figure) bool
 	Includes(figure Figure) bool
-
-	GetListeners() *vector.Vector
+	Draw(g Graphics)
+	GetHandles() *Set
+	GetFigures() *Set
+	SetDisplayBoxRect(figure Figure, rect *Rectangle)
+	SetDisplayBox(figure Figure, topLeft, bottomRight *Point)
+	setBasicDisplayBox(topLeft, bottomRight *Point)
+	
+	GetListeners() *Set
 	AddFigureListener(l FigureListener)
 	RemoveFigureListener(l FigureListener)
 	Release()
@@ -27,49 +33,23 @@ type Figure interface {
 
 type DefaultFigure struct {
 	zValue    int
-	listeners *vector.Vector
+	listeners *Set
 }
 
 func newDefaultFigure() *DefaultFigure {
-	return &DefaultFigure{listeners: new(vector.Vector)}
+	return &DefaultFigure{listeners: NewSet()}
 }
 
-// Does nothing. Subclasses override.
-func (this *DefaultFigure) basicMoveBy(dx int, dy int) {
-	panic(UNIMPLEMENTED)
-}
-
-// Does nothing. Subclasses override.
-func (this *DefaultFigure) setBasicDisplayBox(topLeft, bottomRight *Point) {
-	panic(UNIMPLEMENTED)
-}
-
-// Does nothing. Subclasses override.
-func (this *DefaultFigure) GetDisplayBox() *Rectangle {
-	panic(UNIMPLEMENTED)
-	return nil
-}
-
-func (this *DefaultFigure) GetHandles() *vector.Vector {
-	panic(UNIMPLEMENTED)
-	return nil
-}
-
-func (this *DefaultFigure) GetFigures() *vector.Vector {
-	figures := new(vector.Vector)
-	figures.Push(this)
+func (this *DefaultFigure) GetFigures() *Set {
+	figures := NewSet()
+	figures.Add(this)
 	return figures
 }
 
-func (this *DefaultFigure) Includes(figure Figure) bool {
-	panic(UNIMPLEMENTED)
-	return false
-}
-
-func (this *DefaultFigure) Release() {
+func (this *DefaultFigure) Release(figure Figure) {
 	for i := 0; i < this.listeners.Len(); i++ {
 		currentListerner := this.listeners.At(i).(FigureListener)
-		currentListerner.FigureRemoved(NewFigureEvent(this))
+		currentListerner.FigureRemoved(NewFigureEvent(figure))
 	}
 }
 
@@ -81,85 +61,37 @@ func (this *DefaultFigure) SetZValue(zValue int) {
 	this.zValue = zValue
 }
 
-// Does nothing. Subclasses override.
-func (this *DefaultFigure) Draw(g Graphics) {
-	panic(UNIMPLEMENTED)
-}
-
-func (this *DefaultFigure) GetListeners() *vector.Vector {
+func (this *DefaultFigure) GetListeners() *Set {
 	return this.listeners
 }
 
 func (this *DefaultFigure) AddFigureListener(l FigureListener) {
-	if !Contains(l, this.listeners) {
-		this.listeners.Push(l)
-	}
+	this.listeners.Add(l)
 }
 
 func (this *DefaultFigure) RemoveFigureListener(l FigureListener) {
-	for i := 0; i < this.listeners.Len(); i++ {
-		currentListerner := this.listeners.At(i).(FigureListener)
-		if currentListerner == l {
-			this.listeners.Delete(i)
-			return
-		}
-	}
+	this.listeners.Remove(l)
 }
 
-func (this *DefaultFigure) Clone() Figure {
-	return newDefaultFigure()
-}
-
-func (this *DefaultFigure) Contains(point *Point) bool {
-	panic(UNIMPLEMENTED)
-}
-
-
-func AddToContainer(figure Figure, l FigureListener) {
+func (this *DefaultFigure) AddToContainer(figure Figure, l FigureListener) {
 	figure.AddFigureListener(l)
-	changed(figure)
+	figure.changed(figure)
 }
 
-func RemoveFromContainer(figure Figure, l FigureListener) {
-	changed(figure)
+func (this *DefaultFigure) RemoveFromContainer(figure Figure, l FigureListener) {
+	figure.changed(figure)
 	figure.RemoveFigureListener(l)
 }
 
-func MoveBy(figure Figure, dx int, dy int) {
-	//	willChange(figure)
-	figure.basicMoveBy(dx, dy)
-	changed(figure)
-}
-
-func SetDisplayBoxRect(figure Figure, rect *Rectangle) {
-	SetDisplayBox(figure, &Point{rect.X, rect.Y}, &Point{rect.X + rect.Width, rect.Y + rect.Height})
-}
-
-func SetDisplayBox(figure Figure, topLeft, bottomRight *Point) {
-	//willChange(figure)
-	figure.setBasicDisplayBox(topLeft, bottomRight)
-	changed(figure)
-}
-
-func GetSize(figure Figure) *Dimension {
-	return &Dimension{Width: figure.GetDisplayBox().Width, Height: figure.GetDisplayBox().Height}
-}
-
-func IsEmpty(figure Figure) bool {
-	dimension := GetSize(figure)
-	return dimension.Width < 3 || dimension.Height < 3
-}
-
-func changed(figure Figure) {
-	//	invalidate(figure)
+func (this *DefaultFigure) changed(figure Figure) {
+	//	figure.invalidate(figure)
 	for i := 0; i < figure.GetListeners().Len(); i++ {
 		currentListener := figure.GetListeners().At(i).(FigureListener)
 		currentListener.FigureChanged(NewFigureEvent(figure))
 	}
 }
 
-
-//func invalidate(figure Figure) {
+//func (this *DefaultFigure) invalidate(figure Figure) {
 //	rect := figure.GetDisplayBox()
 //	rect.Grow(HANDLESIZE, HANDLESIZE)
 //	for i := 0; i < figure.GetListeners().Len(); i++ {
@@ -168,9 +100,43 @@ func changed(figure Figure) {
 //	}
 //}
 
-//func willChange(figure Figure) {
-//	invalidate(figure)
+//func (this *DefaultFigure) willChange(figure Figure) {
+//	figure.invalidate(figure)
 //}
+
+func (this *DefaultFigure) MoveBy(figure Figure, dx int, dy int) {
+	//	willChange(figure)
+	figure.basicMoveBy(dx, dy)
+	figure.changed(figure)
+}
+
+func (this *DefaultFigure) IsEmpty(figure Figure) bool {
+	dimension := figure.GetSize(figure)
+	return dimension.Width < 3 || dimension.Height < 3
+}
+
+func (this *DefaultFigure) SetDisplayBoxRect(figure Figure, rect *Rectangle) {
+	figure.SetDisplayBox(
+		figure, 
+		&Point{rect.X, rect.Y}, 
+		&Point{rect.X + rect.Width, rect.Y + rect.Height})
+}
+
+func (this *DefaultFigure) SetDisplayBox(figure Figure, topLeft, bottomRight *Point) {
+	//figure.willChange(figure)
+	figure.setBasicDisplayBox(topLeft, bottomRight)
+	figure.changed(figure)
+}
+
+func (this *DefaultFigure) GetSize(figure Figure) *Dimension {
+	return &Dimension{
+		Width: figure.GetDisplayBox().Width, 
+		Height: figure.GetDisplayBox().Height}
+}
+
+
+
+
 
 
 
@@ -178,23 +144,21 @@ type CompositeFigure struct {
 	*DefaultFigure
 	//TODO lowestZ
 	//TODO highestZ
-	figures *vector.Vector
+	figures *Set
 }
 
 func NewCompositeFigure() *CompositeFigure {
-	return &CompositeFigure{DefaultFigure: newDefaultFigure(), figures: new(vector.Vector)}
+	return &CompositeFigure{DefaultFigure: newDefaultFigure(), figures: NewSet()}
 }
 
 func (this *CompositeFigure) Add(figure Figure) Figure {
-	if !this.Includes(figure) {
-		this.figures.Push(figure)
-		AddToContainer(figure, this)
-	}
+	this.figures.Add(figure)
+	this.AddToContainer(figure, this)
 	fmt.Printf("figure count: %v\n", this.figures.Len())
 	return figure
 }
 
-func (this *CompositeFigure) AddAll(figures *vector.Vector) {
+func (this *CompositeFigure) AddAll(figures *Set) {
 	for i := 0; i < figures.Len(); i++ {
 		currentFigure := figures.At(i).(Figure)
 		this.Add(currentFigure)
@@ -202,18 +166,12 @@ func (this *CompositeFigure) AddAll(figures *vector.Vector) {
 }
 
 func (this *CompositeFigure) Remove(figure Figure) Figure {
-	for i := 0; i < this.figures.Len(); i++ {
-		currentFigure := this.figures.At(i).(Figure)
-		if currentFigure == figure {
-			this.figures.Delete(i)
-			RemoveFromContainer(figure, this)
-			return figure
-		}
-	}
+	this.figures.Remove(figure)
+	this.RemoveFromContainer(figure, this)
 	return figure
 }
 
-func (this *CompositeFigure) RemoveAll(figures *vector.Vector) {
+func (this *CompositeFigure) RemoveAll(figures *Set) {
 	for i := 0; i < figures.Len(); i++ {
 		currentFigure := figures.At(i).(Figure)
 		this.Remove(currentFigure)
@@ -221,12 +179,7 @@ func (this *CompositeFigure) RemoveAll(figures *vector.Vector) {
 }
 
 func (this *CompositeFigure) Replace(toBeReplaced, replacement Figure) {
-	for i := 0; i < this.figures.Len(); i++ {
-		currentFigure := this.figures.At(i).(Figure)
-		if currentFigure == toBeReplaced {
-			this.figures.Set(i, replacement)
-		}
-	}
+	this.figures.Replace(toBeReplaced, replacement)
 }
 
 func (this *CompositeFigure) Draw(g Graphics) {
@@ -240,7 +193,7 @@ func (this *CompositeFigure) GetFigureAt(i int) Figure {
 	return this.figures.At(i).(Figure)
 }
 
-func (this *CompositeFigure) GetFigures() *vector.Vector {
+func (this *CompositeFigure) GetFigures() *Set {
 	return this.figures
 }
 
@@ -252,22 +205,26 @@ func (this *CompositeFigure) Includes(figure Figure) bool {
 	if Figure(this) == figure {
 		return true
 	}
-	return Contains(figure, this.figures)
+	return this.figures.Contains(figure)
 }
 
 func (this *CompositeFigure) basicMoveBy(x, y int) {
 	for i := 0; i < this.figures.Len(); i++ {
 		currentFigure := this.figures.At(i).(Figure)
-		MoveBy(currentFigure, x, y)
+		currentFigure.MoveBy(currentFigure, x, y)
 	}
 }
 
 func (this *CompositeFigure) Release() {
-	this.DefaultFigure.Release()
+	this.DefaultFigure.Release(this)
 	for i := 0; i < this.figures.Len(); i++ {
 		currentFigure := this.figures.At(i).(Figure)
 		currentFigure.Release()
 	}
+}
+
+func (this *CompositeFigure) setBasicDisplayBox(topLeft *Point, bottomRight *Point) {
+	//do nothing (How would that work anyway?)
 }
 
 func (this *CompositeFigure) GetDisplayBox() *Rectangle {
@@ -280,6 +237,15 @@ func (this *CompositeFigure) GetDisplayBox() *Rectangle {
 		return displayBox
 	}
 	return &Rectangle{}
+}
+
+func (this *CompositeFigure) GetHandles() *Set {
+	handles := NewSet()
+	for i := 0; i < this.figures.Len(); i++ {
+		currentFigure := this.figures.At(i).(Figure)
+		AddAllHandles(currentFigure, handles)
+	}
+	return handles
 }
 
 //func (this *CompositeFigure) FigureInvalidated(event *FigureEvent) {
@@ -357,11 +323,13 @@ func NewRectangleFigureFromPoints(topLeft, bottomRight *Point) *RectangleFigure 
 }
 
 func NewRectangleFigureFromRect(rectangle *Rectangle) *RectangleFigure {
-	return NewRectangleFigureFromPoints(&Point{rectangle.X, rectangle.Y}, &Point{rectangle.X + rectangle.Width, rectangle.Y + rectangle.Height})
+	return NewRectangleFigureFromPoints(
+		&Point{rectangle.X, rectangle.Y}, 
+		&Point{rectangle.X + rectangle.Width, rectangle.Y + rectangle.Height})
 }
 
 func (this *RectangleFigure) Draw(g Graphics) {
-	g.SetFGColor(230, 230, 230)
+	g.SetFGColor(Gray)
 	g.DrawBorderedRectFromRect(this.displayBox)
 }
 
@@ -392,8 +360,12 @@ func (this *RectangleFigure) Contains(point *Point) bool {
 	return this.displayBox.ContainsPoint(point)
 }
 
-func (this *RectangleFigure) GetHandles() *vector.Vector {
-	handles := new(vector.Vector)
+func (this *RectangleFigure) GetHandles() *Set {
+	handles := NewSet()
 	AddAllHandles(this, handles)
 	return handles
+}
+
+func (this *RectangleFigure) Release() {
+	this.DefaultFigure.Release(this)
 }

@@ -2,17 +2,16 @@ package gohotdraw
 
 import (
 	"math"
-	"container/vector"
 )
 
-func AddCornerHandles(f Figure, handles *vector.Vector) {
+func AddCornerHandles(f Figure, handles *Set) {
 	handles.Push(newSouthEastHandle(f))
 	handles.Push(newSouthWestHandle(f))
 	handles.Push(newNorthEastHandle(f))
 	handles.Push(newNorthWestHandle(f))
 }
 
-func AddAllHandles(f Figure, handles *vector.Vector) {
+func AddAllHandles(f Figure, handles *Set) {
 	AddCornerHandles(f, handles)
 	handles.Push(newSouthHandle(f))
 	handles.Push(newEastHandle(f))
@@ -49,7 +48,10 @@ func newNorthEastHandle(owner Figure) *northEastHandle {
 
 func (this *northEastHandle) InvokeStep(x, y, anchorX, anchorY int, view DrawingView) {
 	r := this.owner.GetDisplayBox()
-	SetDisplayBox(this.owner, &Point{r.X, int(math.Fmin(float64(r.Y+r.Height), float64(y)))}, &Point{int(math.Fmax(float64(r.X), float64(x))), r.Y + r.Height})
+	this.owner.SetDisplayBox(
+		this.owner, 
+		&Point{r.X, int(math.Fmin(float64(r.Y+r.Height), float64(y)))}, 
+		&Point{int(math.Fmax(float64(r.X), float64(x))), r.Y + r.Height})
 }
 
 type eastHandle struct {
@@ -62,7 +64,10 @@ func newEastHandle(owner Figure) *eastHandle {
 
 func (this *eastHandle) InvokeStep(x, y, anchorX, anchorY int, view DrawingView) {
 	r := this.owner.GetDisplayBox()
-	SetDisplayBox(this.owner, &Point{r.X, r.Y}, &Point{int(math.Fmax(float64(r.X), float64(x))), r.Y + r.Height})
+	this.owner.SetDisplayBox(
+		this.owner, 
+		&Point{r.X, r.Y}, 
+		&Point{int(math.Fmax(float64(r.X), float64(x))), r.Y + r.Height})
 }
 
 type northHandle struct {
@@ -77,7 +82,7 @@ func (this *northHandle) InvokeStep(x, y, anchorX, anchorY int, view DrawingView
 	r := this.owner.GetDisplayBox()
 	topLeft := &Point{r.X, int(math.Fmin(float64(r.Y+r.Height), float64(y)))}
 	bottomRight := &Point{r.X + r.Width, r.Y + r.Height}
-	SetDisplayBox(this.owner, topLeft, bottomRight)
+	this.owner.SetDisplayBox(this.owner, topLeft, bottomRight)
 }
 
 type northWestHandle struct {
@@ -92,7 +97,7 @@ func (this *northWestHandle) InvokeStep(x, y, anchorX, anchorY int, view Drawing
 	r := this.owner.GetDisplayBox()
 	topLeft := &Point{int(math.Fmin(float64(r.X+r.Width), float64(x))), int(math.Fmin(float64(r.Y+r.Height), float64(y)))}
 	bottomRight := &Point{r.X + r.Width, r.Y + r.Height}
-	SetDisplayBox(this.owner, topLeft, bottomRight)
+	this.owner.SetDisplayBox(this.owner, topLeft, bottomRight)
 }
 
 type southEastHandle struct {
@@ -105,7 +110,8 @@ func newSouthEastHandle(owner Figure) *southEastHandle {
 
 func (this *southEastHandle) InvokeStep(x, y, anchorX, anchorY int, view DrawingView) {
 	r := this.owner.GetDisplayBox()
-	SetDisplayBox(this.owner, &Point{r.X, r.Y}, &Point{int(math.Fmax(float64(r.X), float64(x))), int(math.Fmax(float64(r.Y), float64(y)))})
+	this.owner.SetDisplayBox(this.owner, &Point{r.X, r.Y}, 
+		&Point{int(math.Fmax(float64(r.X), float64(x))), int(math.Fmax(float64(r.Y), float64(y)))})
 }
 
 type southHandle struct {
@@ -118,7 +124,8 @@ func newSouthHandle(owner Figure) *southHandle {
 
 func (this *southHandle) InvokeStep(x, y, anchorX, anchorY int, view DrawingView) {
 	r := this.owner.GetDisplayBox()
-	SetDisplayBox(this.owner, &Point{r.X, r.Y}, &Point{r.X + r.Width, int(math.Fmax(float64(r.Y), float64(y)))})
+	this.owner.SetDisplayBox(this.owner, &Point{r.X, r.Y}, 
+		&Point{r.X + r.Width, int(math.Fmax(float64(r.Y), float64(y)))})
 }
 
 type southWestHandle struct {
@@ -133,7 +140,7 @@ func (this *southWestHandle) InvokeStep(x, y, anchorX, anchorY int, view Drawing
 	r := this.owner.GetDisplayBox()
 	topLeft := &Point{int(math.Fmin(float64(r.X+r.Width), float64(x))), r.Y}
 	bottomRight := &Point{r.X + r.Width, int(math.Fmax(float64(r.Y), float64(y)))}
-	SetDisplayBox(this.owner, topLeft, bottomRight)
+	this.owner.SetDisplayBox(this.owner, topLeft, bottomRight)
 }
 
 type westHandle struct {
@@ -146,5 +153,7 @@ func newWestHandle(owner Figure) *westHandle {
 
 func (this *westHandle) InvokeStep(x, y, anchorX, anchorY int, view DrawingView) {
 	r := this.owner.GetDisplayBox()
-	SetDisplayBox(this.owner, &Point{int(math.Fmin(float64(r.X+r.Width), float64(x))), r.Y}, &Point{r.X + r.Width, r.Y + r.Height})
+	this.owner.SetDisplayBox(this.owner, 
+		&Point{int(math.Fmin(float64(r.X+r.Width), float64(x))), r.Y}, 
+		&Point{r.X + r.Width, r.Y + r.Height})
 }

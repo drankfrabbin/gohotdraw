@@ -7,9 +7,7 @@ import (
 )
 
 func (this *XGBGraphics) AddInputListener(l InputListener) {
-	if !Contains(l, this.listeners) {
-		this.listeners.Push(l)
-	}
+	this.listeners.Push(l)
 }
 
 func (this *XGBGraphics) RemoveInputListener(l InputListener) {

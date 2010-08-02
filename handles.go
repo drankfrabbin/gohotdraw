@@ -19,7 +19,7 @@ func HandleContainsPoint(handle Handle, p *Point) bool {
 
 func DrawHandle(handle Handle, g Graphics) {
 	r := GetHandleDisplayBox(handle)
-	g.SetFGColor(210, 210, 210)
+	g.SetFGColor(LightGray)
 	g.DrawBorderedRect(r.X, r.Y, r.Width, r.Height)
 }
 
@@ -40,12 +40,6 @@ func NewDefaultHandle(owner Figure) *DefaultHandle {
 	return &DefaultHandle{owner: owner}
 }
 
-//Locates the handle on the figure.
-//The handle is drawn centered around the returned point.
-func (this *DefaultHandle) Locate() *Point {
-	panic(UNIMPLEMENTED)
-}
-
 func (this *DefaultHandle) GetOwner() Figure {
 	return this.owner
 }
@@ -61,7 +55,6 @@ func (this *DefaultHandle) InvokeStep(x, y, anchorX, anchorY int, view DrawingVi
 func (this *DefaultHandle) InvokeEnd(x, y int, view DrawingView) {
 	//do nothing, subclasses can implement
 }
-
 
 type LocatorHandle struct {
 	*DefaultHandle
@@ -79,6 +72,8 @@ func (this *LocatorHandle) GetLocator() Locator {
 	return this.locator
 }
 
+//Locates the handle on the figure.
+//The handle is drawn centered around the returned point.
 func (this *LocatorHandle) Locate() *Point {
 	return this.locator.Locate(this.GetOwner())
 }
@@ -96,6 +91,6 @@ func NewNullHandle(owner Figure, locator Locator) *NullHandle {
 
 func (this *NullHandle) Draw(g Graphics) {
 	r := GetHandleDisplayBox(this)
-	g.SetFGColor(255, 0, 0)
+	g.SetFGColor(Red)
 	g.DrawBorderedRect(r.X, r.Y, r.Width, r.Height)
 }

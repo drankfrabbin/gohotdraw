@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"x-go-binding.googlecode.com/hg/xgb"
-	"container/vector"
 )
 
 const (
@@ -12,17 +11,23 @@ const (
 	DEFAULT_Y      int16  = 50
 	DEFAULT_WIDTH  uint16 = 400
 	DEFAULT_HEIGHT uint16 = 350
-	DEFAULT_EVENTS uint32 = xgb.EventMaskKeyRelease | xgb.EventMaskKeyPress | xgb.EventMaskButtonRelease | xgb.EventMaskButtonPress | xgb.EventMaskButtonMotion | xgb.EventMaskExposure
+	DEFAULT_EVENTS uint32 = 
+		xgb.EventMaskKeyRelease | 
+		xgb.EventMaskKeyPress | 
+		xgb.EventMaskButtonRelease | 
+		xgb.EventMaskButtonPress | 
+		xgb.EventMaskButtonMotion | 
+		xgb.EventMaskExposure
 )
 
 type Graphics interface {
 	AddInputListener(l InputListener)
 	RemoveInputListener(l InputListener)
 
-	SetFGColor(red, green, blue uint8)
-	SetBGColor(red, green, blue uint8)
+	SetFGColor(color Color)
+	//SetBGColor(color Color)
 	ShowWindow()
-	SetWindowBackground(red, green, blue uint8)
+	SetWindowBackground(color Color)
 	SetWindowTitle(title string)
 	StartListening()
 	GetWindowSize() *Dimension
@@ -39,7 +44,7 @@ type Graphics interface {
 }
 
 type XGBGraphics struct {
-	listeners  *vector.Vector
+	listeners  *Set
 	connection *xgb.Conn
 	winId      xgb.Id
 	pixmapId   xgb.Id
@@ -52,7 +57,7 @@ func NewDefaultXGBGraphics() *XGBGraphics {
 
 func NewXGBGraphics(x, y int16, width, height uint16) *XGBGraphics {
 	g := &XGBGraphics{}
-	g.listeners = new(vector.Vector)
+	g.listeners = NewSet()
 	g.initialize(x, y, width, height)
 	g.SetEventListenTypes([]uint32{DEFAULT_EVENTS})
 	return g
@@ -77,7 +82,19 @@ func (this *XGBGraphics) createConnection() *xgb.Conn {
 func (this *XGBGraphics) createWindow(x, y int16, width, height uint16) xgb.Id {
 	if this.connection != nil {
 		winId := this.connection.NewId()
-		this.connection.CreateWindow(this.connection.DefaultScreen().RootDepth, winId, this.connection.DefaultScreen().Root, x, y, width, height, 0, xgb.WindowClassCopyFromParent, this.connection.DefaultScreen().RootVisual, 0, nil)
+		this.connection.CreateWindow(
+			this.connection.DefaultScreen().RootDepth,
+			winId, 
+			this.connection.DefaultScreen().Root, 
+			x, 
+			y, 
+			width, 
+			height, 
+			0, 
+			xgb.WindowClassCopyFromParent, 
+			this.connection.DefaultScreen().RootVisual, 
+			0, 
+			nil)
 		return winId
 	}
 	return 0
@@ -86,7 +103,12 @@ func (this *XGBGraphics) createWindow(x, y int16, width, height uint16) xgb.Id {
 func (this *XGBGraphics) createPixmap(width, height uint16) xgb.Id {
 	if this.connection != nil {
 		pixmapId := this.connection.NewId()
-		this.connection.CreatePixmap(this.connection.DefaultScreen().RootDepth, pixmapId, this.winId, width, height)
+		this.connection.CreatePixmap(
+			this.connection.DefaultScreen().RootDepth, 
+			pixmapId, 
+			this.winId, 
+			width, 
+			height)
 		return pixmapId
 	}
 	return 0
@@ -119,7 +141,13 @@ func (this *XGBGraphics) SetWindowTitle(title string) {
 }
 
 func (this *XGBGraphics) setProperty(propertyName xgb.Id, value string) {
-	this.connection.ChangeProperty(xgb.PropModeReplace, this.winId, propertyName, xgb.AtomString, 8, []byte(value))
+	this.connection.ChangeProperty(
+		xgb.PropModeReplace, 
+		this.winId, 
+		propertyName, 
+		xgb.AtomString, 
+		8, 
+		[]byte(value))
 }
 
 func (this *XGBGraphics) SetEventListenTypes(eventTypes []uint32) {
@@ -134,28 +162,16 @@ func (this *XGBGraphics) setContextAttributes(attribute uint32, values []uint32)
 	this.connection.ChangeGC(this.contextId, attribute, values)
 }
 
-func (this *XGBGraphics) SetWindowBackground(red, green, blue uint8) {
-	color := this.getColorValue(red, green, blue)
-	this.setWindowAttributes(xgb.CWBackPixel, []uint32{color})
+func (this *XGBGraphics) SetWindowBackground(color Color) {
+	this.setWindowAttributes(xgb.CWBackPixel, []uint32{uint32(color)})
 }
 
-func (this *XGBGraphics) SetFGColor(red, green, blue uint8) {
-	color := this.getColorValue(red, green, blue)
-	this.setContextAttributes(xgb.GCForeground, []uint32{color})
+func (this *XGBGraphics) SetFGColor(color Color) {
+	this.setContextAttributes(xgb.GCForeground, []uint32{uint32(color)})
 }
 
-func (this *XGBGraphics) SetBGColor(red, green, blue uint8) {
-	color := this.getColorValue(red, green, blue)
-	this.setContextAttributes(xgb.GCBackground, []uint32{color})
-}
-
-func (this *XGBGraphics) getColorValue(red, green, blue uint8) uint32 {
-	colormapId := this.connection.DefaultScreen().DefaultColormap
-	reply, err := this.connection.AllocColor(colormapId, uint16(red)<<8, uint16(green)<<8, uint16(blue)<<8)
-	if err != nil {
-		fmt.Println("ERROR allocating color")
-	}
-	return reply.Pixel
+func (this *XGBGraphics) SetBGColor(color Color) {
+	this.setContextAttributes(xgb.GCBackground, []uint32{uint32(color)})
 }
 
 func (this *XGBGraphics) GetWindowSize() *Dimension {
@@ -191,7 +207,7 @@ func (this *XGBGraphics) DrawBorderFromRectDirectly(rect *Rectangle) {
 
 func (this *XGBGraphics) DrawBorderedRect(x, y, width, height int) {
 	this.DrawRect(x, y, width, height)
-	this.SetFGColor(0, 0, 0)
+	this.SetFGColor(Black)
 	this.DrawBorder(x, y, width, height)
 }
 

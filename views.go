@@ -1,7 +1,6 @@
 package gohotdraw
 
 import (
-	"container/vector"
 	_ "fmt"
 )
 
@@ -22,8 +21,8 @@ type DrawingView interface {
 	AddToSelection(figure Figure)
 	RemoveFromSelection(figure Figure)
 	ClearSelection()
-	AddAllToSelection(figures *vector.Vector)
-	GetSelection() *vector.Vector
+	AddAllToSelection(figures *Set)
+	GetSelection() *Set
 	ToggleSelection(figure Figure)
 
 	FindHandle(p *Point) Handle
@@ -46,17 +45,17 @@ type StandardDrawingView struct {
 	editor             DrawingEditor
 	updateStrategy     Painter
 	graphics           Graphics
-	selection          *vector.Vector
-	selectionListeners *vector.Vector
-	selectionHandles   *vector.Vector
+	selection          *Set
+	selectionListeners *Set
+	selectionHandles   *Set
 }
 
 func NewStandardDrawingView() *StandardDrawingView {
 	view := &StandardDrawingView{}
 	view.eventHandler = NewEventHandler(view)
 	view.updateStrategy = &SimpleUpdateStrategy{}
-	view.selection = new(vector.Vector)
-	view.selectionListeners = new(vector.Vector)
+	view.selection = NewSet()
+	view.selectionListeners = NewSet()
 	return view
 }
 
@@ -101,12 +100,12 @@ func (this *StandardDrawingView) Remove(figure Figure) Figure {
 	return this.drawing.Remove(figure)
 }
 
-func (this *StandardDrawingView) GetSelection() *vector.Vector {
-	return CloneVector(this.selection)
+func (this *StandardDrawingView) GetSelection() *Set {
+	return this.selection.Clone()
 }
 
 func (this *StandardDrawingView) IsFigureSelected(figure Figure) bool {
-	return Contains(figure, this.selection)
+	return this.selection.Contains(figure)
 }
 
 func (this *StandardDrawingView) AddToSelection(figure Figure) {
@@ -117,7 +116,7 @@ func (this *StandardDrawingView) AddToSelection(figure Figure) {
 	}
 }
 
-func (this *StandardDrawingView) AddAllToSelection(figures *vector.Vector) {
+func (this *StandardDrawingView) AddAllToSelection(figures *Set) {
 	for currentFigure := range figures.Iter() {
 		this.AddToSelection(currentFigure.(Figure))
 	}
@@ -140,7 +139,7 @@ func (this *StandardDrawingView) ClearSelection() {
 	if this.selectionHandles == nil {
 		return
 	}
-	this.selection = new(vector.Vector)
+	this.selection = NewSet()
 	this.selectionHandles = nil
 	this.FireSelectionChanged()
 }
@@ -156,9 +155,7 @@ func (this *StandardDrawingView) ToggleSelection(figure Figure) {
 
 
 func (this *StandardDrawingView) AddFigureSelectionListener(l FigureSelectionListener) {
-	if !Contains(l, this.selectionListeners) {
-		this.selectionListeners.Push(l)
-	}
+	this.selectionListeners.Add(l)
 }
 func (this *StandardDrawingView) RemoveFigureSelectionListener(l FigureSelectionListener) {
 	for i := 0; i < this.selectionListeners.Len(); i++ {
@@ -177,10 +174,9 @@ func (this *StandardDrawingView) FireSelectionChanged() {
 	}
 }
 
-
-func (this *StandardDrawingView) GetSelectionHandles() *vector.Vector {
+func (this *StandardDrawingView) GetSelectionHandles() *Set {
 	if this.selectionHandles == nil {
-		this.selectionHandles = new(vector.Vector)
+		this.selectionHandles = NewSet()
 		selectedFigures := this.GetSelection()
 		for f := 0; f < selectedFigures.Len(); f++ {
 			currentFigure := selectedFigures.At(f).(Figure)
@@ -225,7 +221,7 @@ func (this *StandardDrawingView) drawBackground(g Graphics) {
 	width := g.GetWindowSize().Width
 	height := g.GetWindowSize().Height
 	//fmt.Printf("height: %v, width: %v\n", width, height)
-	g.SetFGColor(255, 255, 255)
+	g.SetFGColor(White)
 	//fmt.Println("paint background")
 	g.DrawRectFromRect(&Rectangle{0, 0, width, height})
 }

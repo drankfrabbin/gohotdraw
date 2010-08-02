@@ -1,7 +1,6 @@
 package gohotdraw
 
 import (
-	"container/vector"
 	_ "fmt"
 )
 
@@ -25,8 +24,8 @@ func NewStandardDrawing() *StandardDrawing {
 	return drawing
 }
 
-func (this *StandardDrawing) GetHandles() *vector.Vector {
-	handles := new(vector.Vector)
+func (this *StandardDrawing) GetHandles() *Set {
+	handles := NewSet()
 	handles.Push(NewNullHandle(this, CreateNorthWestLocator()))
 	handles.Push(NewNullHandle(this, CreateNorthEastLocator()))
 	handles.Push(NewNullHandle(this, CreateSouthWestLocator()))

@@ -27,7 +27,7 @@ func TestRectFigure(t *testing.T) {
 
 func TestRectFigureGetSize(t *testing.T) {
 	fig := NewRectangleFigureFromPoints(&Point{1, 2}, &Point{4, 6})
-	dim := GetSize(fig)
+	dim := fig.GetSize(fig)
 	expWidth := 3
 	expHeight := 4
 	if dim.Width != expWidth {
@@ -40,7 +40,7 @@ func TestRectFigureGetSize(t *testing.T) {
 
 func TestMoveRectFigure(t *testing.T) {
 	fig := NewRectangleFigureFromPoints(&Point{3, 3}, &Point{4, 4})
-	MoveBy(fig, 2, -1)
+	fig.MoveBy(fig, 2, -1)
 	db := fig.GetDisplayBox()
 	expX := 5
 	expY := 2
@@ -69,7 +69,7 @@ func TestMoveComposite(t *testing.T) {
 	fig2 := NewRectangleFigureFromPoints(&Point{2, 2}, &Point{5, 5})
 	cf.Add(fig1)
 	cf.Add(fig2)
-	MoveBy(cf, 1, -1)
+	cf.MoveBy(cf, 1, -1)
 	fig1Box := fig1.GetDisplayBox()
 	testRect(t, fig1Box, 2, 0, 2, 2)
 	fig2Box := fig2.GetDisplayBox()
