@@ -1,5 +1,9 @@
 package gohotdraw
 
+import (
+	_"fmt"
+)	
+
 type Event interface {
 	GetSource() interface{}
 }
@@ -59,10 +63,6 @@ func (this *EventHandler) FigureRemoved(event *FigureEvent) {
 	this.view.Repaint()
 }
 
-func (this *EventHandler) FigureRequestRemove(event *FigureEvent) {
-	this.view.Repaint()
-}
-
 type InputEvent interface{}
 
 const (
@@ -95,29 +95,3 @@ type ExposeEvent struct {
 	Width  int
 	Height int
 }
-
-type ToolEvent struct {
-	invalidatedArea *Rectangle
-	*EventObject
-	view DrawingView
-}
-
-//func NewToolEvent(tool Tool, view DrawingView, invalidatedArea *Rectangle) *ToolEvent {
-//	event := &ToolEvent{}
-//	event.invalidatedArea = invalidatedArea
-//	event.EventObject = &EventObject{tool}
-//	event.view = view
-//	return event
-//}
-
-//func (this *ToolEvent) GetTool() Tool {
-//	return this.GetSource().(Tool)
-//}
-
-//func (this *ToolEvent) GetView() DrawingView {
-//	return this.view
-//}
-
-//func (this *ToolEvent) GetInvalidatedArea() *Rectangle {
-//	return this.invalidatedArea
-//}

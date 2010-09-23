@@ -1,7 +1,6 @@
 package gohotdraw
 
 import (
-	_"fmt"
 	"math"
 )
 
@@ -11,13 +10,6 @@ type Tool interface {
 	IsActive() bool
 	Activate()
 	Deactivate()
-	//	IsEnabled() bool
-	//	SetEnabled(isEnabled bool)
-	//	IsUsable() bool
-	//	SetUsable(isUsable bool)
-	//	AddToolListener(l *ToolListener)
-	//	RemoveToolListener(l *ToolListener)
-	//	GetEditor() DrawingEditor
 }
 
 type DefaultTool struct {

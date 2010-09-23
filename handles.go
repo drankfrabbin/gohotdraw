@@ -20,7 +20,7 @@ func HandleContainsPoint(handle Handle, p *Point) bool {
 func DrawHandle(handle Handle, g Graphics) {
 	r := GetHandleDisplayBox(handle)
 	g.SetFGColor(LightGray)
-	g.DrawBorderedRect(r.X, r.Y, r.Width, r.Height)
+	g.DrawBorderedRectFromRect(r)
 }
 
 
@@ -79,18 +79,18 @@ func (this *LocatorHandle) Locate() *Point {
 }
 
 
-type NullHandle struct {
-	*LocatorHandle
-}
+//type NullHandle struct {
+//	*LocatorHandle
+//}
 
-func NewNullHandle(owner Figure, locator Locator) *NullHandle {
-	handle := &NullHandle{}
-	handle.LocatorHandle = NewLocatorHandle(owner, locator)
-	return handle
-}
+//func NewNullHandle(owner Figure, locator Locator) *NullHandle {
+//	handle := &NullHandle{}
+//	handle.LocatorHandle = NewLocatorHandle(owner, locator)
+//	return handle
+//}
 
-func (this *NullHandle) Draw(g Graphics) {
-	r := GetHandleDisplayBox(this)
-	g.SetFGColor(Red)
-	g.DrawBorderedRect(r.X, r.Y, r.Width, r.Height)
-}
+//func (this *NullHandle) Draw(g Graphics) {
+//	r := GetHandleDisplayBox(this)
+//	g.SetFGColor(Red)
+//	g.DrawBorderedRect(r.X, r.Y, r.Width, r.Height)
+//}

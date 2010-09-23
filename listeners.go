@@ -6,11 +6,10 @@ type FigureListener interface {
 	EventListener
 	//FigureInvalidated(event *FigureEvent)
 	FigureChanged(event *FigureEvent)
+	
 	//Sent when a figure was added to a drawing
 	FigureAdded(event *FigureEvent)
 	FigureRemoved(event *FigureEvent)
-	FigureRequestRemove(event *FigureEvent)
-	//FigureRequestUpdate(event *FigureEvent)
 }
 
 type FigureSelectionListener interface {

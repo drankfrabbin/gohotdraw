@@ -21,10 +21,8 @@ func (this *XGBGraphics) RemoveInputListener(l InputListener) {
 }
 
 func (this *XGBGraphics) StartListening() {
-	//	var rect *gohotdraw.Rectangle
 	for {
 		reply := this.GetEventReply()
-		//		fmt.Printf("event %T\n", reply)
 		switch xgbEvent := reply.(type) {
 		case xgb.ExposeEvent:
 			event := &ExposeEvent{}
@@ -34,10 +32,6 @@ func (this *XGBGraphics) StartListening() {
 			event.Height = int(xgbEvent.Height)
 			this.fireExposeHappened(event)
 		case xgb.ButtonPressEvent:
-//			fmt.Printf("x: %v ", xgbEvent.EventX)
-//			fmt.Printf("y: %v\n", xgbEvent.EventY)
-//			fmt.Printf("detail: %v\n", xgbEvent.Detail)
-//			fmt.Printf("state: %v\n", xgbEvent.State)
 			event := &MouseEvent{}
 			event.X = int(xgbEvent.EventX)
 			event.Y = int(xgbEvent.EventY)

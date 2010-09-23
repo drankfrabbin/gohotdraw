@@ -41,7 +41,7 @@ func (this *DefaultDrawingEditor) SetTool(tool Tool) {
 }
 
 func (this *DefaultDrawingEditor) ToolDone() {
-	//TODO set tool to defaultTool
+	//do nothing, could be changed to set default tool
 }
 
 func (this *DefaultDrawingEditor) FigureSelectionChanged(view DrawingView) {
