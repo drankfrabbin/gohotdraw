@@ -9,6 +9,7 @@ GOFILES=\
 	editors.go\
 	events.go\
 	figures.go\
+	figuredecoration.go\
 	graphics.go\
 	graphicsevents.go\
 	handles.go\

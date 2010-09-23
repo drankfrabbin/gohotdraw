@@ -84,28 +84,13 @@ func (this *DefaultFigure) RemoveFromContainer(figure Figure, l FigureListener) 
 }
 
 func (this *DefaultFigure) changed(figure Figure) {
-	//	figure.invalidate(figure)
 	for i := 0; i < figure.GetListeners().Len(); i++ {
 		currentListener := figure.GetListeners().At(i).(FigureListener)
 		currentListener.FigureChanged(NewFigureEvent(figure))
 	}
 }
 
-//func (this *DefaultFigure) invalidate(figure Figure) {
-//	rect := figure.GetDisplayBox()
-//	rect.Grow(HANDLESIZE, HANDLESIZE)
-//	for i := 0; i < figure.GetListeners().Len(); i++ {
-//		currentListener := figure.GetListeners().At(i).(FigureListener)
-//		currentListener.FigureInvalidated(NewFigureEventRect(figure, rect))
-//	}
-//}
-
-//func (this *DefaultFigure) willChange(figure Figure) {
-//	figure.invalidate(figure)
-//}
-
 func (this *DefaultFigure) MoveBy(figure Figure, dx int, dy int) {
-	//	willChange(figure)
 	figure.basicMoveBy(dx, dy)
 	figure.changed(figure)
 }
@@ -123,7 +108,6 @@ func (this *DefaultFigure) SetDisplayBoxRect(figure Figure, rect *Rectangle) {
 }
 
 func (this *DefaultFigure) SetDisplayBox(figure Figure, topLeft, bottomRight *Point) {
-	//figure.willChange(figure)
 	figure.setBasicDisplayBox(topLeft, bottomRight)
 	figure.changed(figure)
 }
@@ -248,13 +232,6 @@ func (this *CompositeFigure) GetHandles() *Set {
 	return handles
 }
 
-//func (this *CompositeFigure) FigureInvalidated(event *FigureEvent) {
-//	for i := 0; i < this.listeners.Len(); i++ {
-//		currentListener := this.listeners.At(i).(FigureListener)
-//		currentListener.FigureInvalidated(event)
-//	}
-//}
-
 func (this *CompositeFigure) FigureChanged(event *FigureEvent) {
 	for i := 0; i < this.listeners.Len(); i++ {
 		currentListener := this.listeners.At(i).(FigureListener)
@@ -276,20 +253,6 @@ func (this *CompositeFigure) FigureRemoved(event *FigureEvent) {
 	}
 }
 
-func (this *CompositeFigure) FigureRequestRemove(event *FigureEvent) {
-	for i := 0; i < this.listeners.Len(); i++ {
-		currentListener := this.listeners.At(i).(FigureListener)
-		currentListener.FigureRequestRemove(NewFigureEvent(this))
-	}
-}
-//func (this *CompositeFigure) FigureRequestUpdate(event *FigureEvent) {
-//	for i := 0; i < this.listeners.Len(); i++ {
-//		currentListener := this.listeners.At(i).(FigureListener)
-//		currentListener.FigureRequestUpdate(event)
-//	}
-//}
-
-
 func (this *CompositeFigure) Clone() Figure {
 	figure := NewCompositeFigure()
 	figure.figures = this.figures
@@ -304,6 +267,12 @@ func (this *CompositeFigure) Contains(point *Point) bool {
 	}
 	return false
 }
+
+
+
+
+
+
 
 
 type RectangleFigure struct {
@@ -330,7 +299,7 @@ func NewRectangleFigureFromRect(rectangle *Rectangle) *RectangleFigure {
 
 func (this *RectangleFigure) Draw(g Graphics) {
 	g.SetFGColor(Gray)
-	g.DrawBorderedRectFromRect(this.displayBox)
+	g.DrawRectFromRect(this.GetDisplayBox())
 }
 
 func (this *RectangleFigure) setBasicDisplayBox(topLeft, bottomRight *Point) {
@@ -369,3 +338,4 @@ func (this *RectangleFigure) GetHandles() *Set {
 func (this *RectangleFigure) Release() {
 	this.DefaultFigure.Release(this)
 }
+

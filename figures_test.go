@@ -16,7 +16,7 @@ func TestDefaultRectFigure(t *testing.T) {
 }
 
 func TestRectFigure(t *testing.T) {
-	fig := NewRectangleFigureFromPoints(&Point{1, 2}, &Point{4, 6})
+	fig := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{1, 2}, &Point{4, 6}))
 	db := fig.GetDisplayBox()
 	expX := 1
 	expY := 2
@@ -26,7 +26,7 @@ func TestRectFigure(t *testing.T) {
 }
 
 func TestRectFigureGetSize(t *testing.T) {
-	fig := NewRectangleFigureFromPoints(&Point{1, 2}, &Point{4, 6})
+	fig := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{1, 2}, &Point{4, 6}))
 	dim := fig.GetSize(fig)
 	expWidth := 3
 	expHeight := 4
@@ -39,7 +39,7 @@ func TestRectFigureGetSize(t *testing.T) {
 }
 
 func TestMoveRectFigure(t *testing.T) {
-	fig := NewRectangleFigureFromPoints(&Point{3, 3}, &Point{4, 4})
+	fig := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{3, 3}, &Point{4, 4}))
 	fig.MoveBy(fig, 2, -1)
 	db := fig.GetDisplayBox()
 	expX := 5
@@ -51,8 +51,8 @@ func TestMoveRectFigure(t *testing.T) {
 
 func TestCompositeAddFigures(t *testing.T) {
 	cf := NewCompositeFigure()
-	fig1 := NewRectangleFigureFromPoints(&Point{1, 1}, &Point{1, 3})
-	fig2 := NewRectangleFigureFromPoints(&Point{2, 2}, &Point{5, 5})
+	fig1 := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{1, 1}, &Point{1, 3}))
+	fig2 := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{2, 2}, &Point{5, 5}))
 	cf.Add(fig1)
 	cf.Add(fig2)
 	if cf.GetFigures().Len() != 2 {
@@ -65,8 +65,8 @@ func TestCompositeAddFigures(t *testing.T) {
 
 func TestMoveComposite(t *testing.T) {
 	cf := NewCompositeFigure()
-	fig1 := NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3})
-	fig2 := NewRectangleFigureFromPoints(&Point{2, 2}, &Point{5, 5})
+	fig1 := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3}))
+	fig2 := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{2, 2}, &Point{5, 5}))
 	cf.Add(fig1)
 	cf.Add(fig2)
 	cf.MoveBy(cf, 1, -1)
@@ -102,6 +102,13 @@ func TestCompIncludes(t *testing.T) {
 	}
 }
 
+func TestBorderDecoratorIncludes(t *testing.T) {
+	fig1 := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3}))
+	if !fig1.Includes(fig1) {
+		t.Errorf("fig1 should inlcude itself")
+	}
+}
+
 func TestCompNoDuplicateFigures(t *testing.T) {
 	cf := NewCompositeFigure()
 	fig := NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3})
@@ -112,10 +119,10 @@ func TestCompNoDuplicateFigures(t *testing.T) {
 
 func TestCompReplaceFigure(t *testing.T) {
 	cf := NewCompositeFigure()
-	fig1 := NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3})
-	figToReplace := NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3})
-	fig2 := NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3})
-	figRepl := NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3})
+	fig1 := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3}))
+	figToReplace := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3}))
+	fig2 := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3}))
+	figRepl := NewBorderDecorator(NewRectangleFigureFromPoints(&Point{1, 1}, &Point{3, 3}))
 	cf.Add(fig1)
 	cf.Add(figToReplace)
 	cf.Add(fig2)
