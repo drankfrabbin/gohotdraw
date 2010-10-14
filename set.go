@@ -58,8 +58,21 @@ func (this *Set) Replace(toBeReplaced, replacement interface{}) {
 //Returns a new Set with the elements of the original Set
 func (this *Set) Clone() *Set {
 	set := NewSet()
-	for element := range this.Vector.Iter() {
+	for element := range this.Iter() {
 		set.Push(element)
 	}
 	return set
+}
+
+func (this *Set) Iter() <-chan interface{} {
+	c := make(chan interface{})
+	go this.iterate(c)
+	return c
+}
+
+func (this *Set) iterate(c chan<- interface{}) {
+	for _,v := range *this.Vector {
+		c <- v
+	}
+	close(c)
 }

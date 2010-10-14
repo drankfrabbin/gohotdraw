@@ -33,10 +33,9 @@ func (this *StandardDrawing) GetTitle() string {
 }
 
 func (this *StandardDrawing) FindFigure(point *Point) Figure {
-	//this.figures is a Set. A Set can contain any object (interface{})
-	for figure := range this.figures.Iter() { // iterates over the elements of figures, type of figure is interface{}
-		if figure.(Figure).Contains(point) { // x.(Figure) is type assertion
-			return figure.(Figure) // type assertion (http://golang.org/doc/go_spec.html#Type_assertions)
+	for figure := range this.figures.Iter() { 
+		if figure.(Figure).Contains(point) { 
+			return figure.(Figure) 
 		}
 	}
 	return nil
